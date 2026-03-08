@@ -1,0 +1,5 @@
+{
+  "name": "Finger Ninja - Gesture Magic",
+  "description": "An AI-powered gesture and emotion-controlled game where difficulty adapts to your stress levels.",
+  "requestFramePermissions": ["camera"]
+}

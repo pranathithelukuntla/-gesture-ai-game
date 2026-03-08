@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finger Ninja - Gesture Magic</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Scanline overlay for retro effect -->
+        <div id="scanlines"></div>
+        <!-- Screen flash overlay -->
+        <div id="screen-flash"></div>
+
+        <!-- Webcam Preview -->
+        <div id="webcam-container">
+            <img id="webcam-preview" src="" alt="Webcam Stream">
+            <div id="connection-status">CONNECTING...</div>
+        </div>
+
+        <!-- HUD Overlay -->
+        <div id="ui-overlay">
+            <div class="stat-box" id="score-box">
+                <span class="label">SCORE</span>
+                <span id="score">0000</span>
+            </div>
+            <div class="stat-box" id="level-box">
+                <span class="label">LEVEL</span>
+                <span id="level-display">01</span>
+            </div>
+            <div class="stat-box" id="stress-box">
+                <span class="label">STRESS</span>
+                <div class="meter-container">
+                    <div id="stress-meter" class="meter-fill"></div>
+                </div>
+                <span id="stress-text">CALM</span>
+            </div>
+            <div class="stat-box" id="lives-box">
+                <span class="label">LIVE</span>
+                <span id="lives-display">❤️</span>
+            </div>
+            <div class="stat-box" id="gesture-box">
+                <span class="label">GESTURE</span>
+                <span id="gesture-text">NONE</span>
+            </div>
+            <div class="stat-box" id="multiplier-box">
+                <span class="label">MULTI</span>
+                <span id="multiplier-display">x1</span>
+            </div>
+            <div class="stat-box" id="charges-box">
+                <span class="label">CHARGES</span>
+                <div id="charge-icons">
+                    <span id="charge-shield" title="Shield (🖐)">🖐:0</span>
+                    <span id="charge-victory" title="Slow-Mo (👌)">👌:0</span>
+                    <span id="charge-thumbs" title="Multi (🤙)">🤙:0</span>
+                </div>
+            </div>
+            <!-- Toggle buttons -->
+            <button class="hud-btn" id="sound-toggle-btn" onclick="toggleSound()" title="Toggle Sound">🔊</button>
+            <button class="hud-btn" id="analytics-toggle-btn" onclick="toggleAnalytics()"
+                title="Stress Analytics">📊</button>
+        </div>
+
+        <!-- Bomb cooldown bar -->
+        <div id="bomb-hud">
+            <span class="label">BOMB</span>
+            <div class="meter-container">
+                <div id="bomb-meter" class="meter-fill bomb-ready"></div>
+            </div>
+            <span id="bomb-text">READY</span>
+        </div>
+
+        <!-- Power-Up Banner -->
+        <div id="powerup-banner" class="hidden"></div>
+
+        <!-- Wave Banner -->
+        <div id="wave-banner" class="hidden">
+            <div id="wave-text">WAVE 1</div>
+        </div>
+
+        <!-- Combo Flash -->
+        <div id="combo-flash" class="hidden"></div>
+
+        <!-- ★ Stress Analytics Dashboard ★ -->
+        <div id="analytics-panel" class="hidden">
+            <div id="analytics-header">
+                <span>📊 STRESS ANALYTICS</span>
+                <button class="close-btn" onclick="toggleAnalytics()">✕</button>
+            </div>
+            <div id="analytics-chart-wrap">
+                <canvas id="stress-chart"></canvas>
+            </div>
+            <div id="analytics-stats">
+                <div class="a-stat"><span class="label">AVG STRESS</span><span id="avg-stress">0%</span></div>
+                <div class="a-stat"><span class="label">PEAK STRESS</span><span id="peak-stress">0%</span></div>
+                <div class="a-stat"><span class="label">COMBOS</span><span id="combo-count">0</span></div>
+                <div class="a-stat"><span class="label">DIFFICULTY</span><span id="difficulty-label">CALM</span></div>
+            </div>
+        </div>
+
+        <!-- Start / Instructions Screen -->
+        <div id="instructions">
+            <div class="logo-wrap">
+                <h2 class="logo-title">FINGER<br>NINJA</h2>
+                <p class="logo-sub">GESTURE MAGIC &amp; EMOTION ADAPTIVE GAMEPLAY</p>
+            </div>
+            <div class="name-input-row">
+                <label for="player-name">YOUR NAME:</label>
+                <input type="text" id="player-name" maxlength="12" placeholder="NINJA" spellcheck="false">
+            </div>
+            <div class="controls-grid">
+                <div class="ctrl-card">
+                    <div class="ctrl-icon">✋</div>
+                    <div class="ctrl-label">SWIPE</div>
+                    <div class="ctrl-desc">Move Character</div>
+                </div>
+                <div class="ctrl-card">
+                    <div class="ctrl-icon">✌️</div>
+                    <div class="ctrl-label">VICTORY</div>
+                    <div class="ctrl-desc">Shoot Shuriken</div>
+                </div>
+                <div class="ctrl-card">
+                    <div class="ctrl-icon">🖐</div>
+                    <div class="ctrl-label">OPEN PALM</div>
+                    <div class="ctrl-desc">Energy Shield</div>
+                </div>
+                <div class="ctrl-card">
+                    <div class="ctrl-icon">✊</div>
+                    <div class="ctrl-label">FIST</div>
+                    <div class="ctrl-desc">Bomb — Clear Screen</div>
+                </div>
+                <div class="ctrl-card">
+                    <div class="ctrl-icon">👌</div>
+                    <div class="ctrl-label">OK SIGN</div>
+                    <div class="ctrl-desc">Slow-Mo (6s)</div>
+                </div>
+                <div class="ctrl-card">
+                    <div class="ctrl-icon">🤙</div>
+                    <div class="ctrl-label">PINKY UP</div>
+                    <div class="ctrl-desc">Score ×2 (10s)</div>
+                </div>
+                <div class="ctrl-card combo-card" style="grid-column:span 2">
+                    <div class="ctrl-icon">⚡</div>
+                    <div class="ctrl-label">COMBOS</div>
+                    <div class="ctrl-desc">Victory→Palm=Shield Blast &nbsp;|&nbsp; Victory→Victory=Rapid Fire
+                        &nbsp;|&nbsp;
+                        Palm→Fist=Shockwave</div>
+                </div>
+            </div>
+            <button id="start-btn">▶ START MISSION</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over" class="hidden">
+            <h1>MISSION FAILED</h1>
+            <div id="final-stats">
+                <div class="final-row"><span>SCORE</span><span id="final-score">0</span></div>
+                <div class="final-row"><span>LEVEL</span><span id="final-level">1</span></div>
+                <div class="final-row"><span>RANK</span><span id="final-rank">#?</span></div>
+                <div class="final-row"><span>COMBOS HIT</span><span id="final-combos">0</span></div>
+                <div class="final-row"><span>PEAK STRESS</span><span id="final-peak-stress">0%</span></div>
+            </div>
+            <div id="leaderboard-panel">
+                <h3>⚡ LEADERBOARD</h3>
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>NAME</th>
+                            <th>SCORE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body"></tbody>
+                </table>
+            </div>
+            <div class="gameover-btns">
+                <button onclick="restartGame()">↺ RETRY</button>
+                <button id="replay-btn" onclick="watchReplay()">▶ REPLAY</button>
+            </div>
+        </div>
+
+        <!-- Replay Mode Banner -->
+        <div id="replay-mode-banner" class="hidden">
+            <span>⏪ REPLAY MODE</span>
+            <button onclick="stopReplay()">✕ STOP</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="game.js"></script>
+</body>
+
+</html>
