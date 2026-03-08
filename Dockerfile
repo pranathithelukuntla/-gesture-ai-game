@@ -10,4 +10,4 @@ WORKDIR /app/backend
 
 EXPOSE 8080
 
-CMD ["gunicorn", "-k", "eventlet", "-w", "1", "-b", "0.0.0.0:8080", "app:app"]
+CMD ["gunicorn", "-k", "eventlet", "-w", "2", "-b", "0.0.0.0:8080", "app:app"]
