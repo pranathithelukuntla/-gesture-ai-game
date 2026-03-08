@@ -8,4 +8,6 @@ RUN pip install --no-cache-dir -r backend/requirements.txt
 
 WORKDIR /app/backend
 
-CMD ["gunicorn", "app:app", "-k", "eventlet", "-w", "1", "--bind", "0.0.0.0:8080"]
+EXPOSE 8080
+
+CMD ["gunicorn", "-k", "eventlet", "-w", "1", "-b", "0.0.0.0:8080", "app:app"]
