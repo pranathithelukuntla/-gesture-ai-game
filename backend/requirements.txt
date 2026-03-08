@@ -4,3 +4,4 @@ flask
 flask-socketio
 protobuf==5.28.3
 gunicorn
+eventlet
