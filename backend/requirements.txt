@@ -3,3 +3,4 @@ mediapipe==0.10.30
 flask
 flask-socketio
 protobuf==5.28.3
+gunicorn
