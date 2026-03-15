@@ -1,7 +1,8 @@
 opencv-python-headless
-mediapipe==0.10.30
+mediapipe==0.10.14
 flask
 flask-socketio
-protobuf==5.28.3
+protobuf==4.25.3
+numpy
 gunicorn
 eventlet

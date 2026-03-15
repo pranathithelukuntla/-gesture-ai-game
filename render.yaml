@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: gesture-ai-game
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+        value: python

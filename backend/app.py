@@ -7,7 +7,7 @@ import time
 import base64
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend')
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 detector = HandEmotionDetector()
 
 # ── NOTE: Camera is owned by the browser (MediaPipe JS) ─────────────────

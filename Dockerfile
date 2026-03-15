@@ -1,6 +1,12 @@
-FROM python:3.10
+FROM python:3.11-slim
 
 WORKDIR /app
+
+# System dependencies needed by OpenCV headless & mediapipe
+RUN apt-get update && apt-get install -y \
+    libglib2.0-0 \
+    libgl1 \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY . .
 
@@ -10,5 +16,5 @@ WORKDIR /app/backend
 
 EXPOSE 8080
 
-# Use shell form so $PORT environment variable is evaluated at runtime
-CMD gunicorn -k eventlet -w 1 -b 0.0.0.0:${PORT:-8080} app:app
+# $PORT is injected by Render at runtime
+CMD gunicorn -k eventlet -w 1 -b 0.0.0.0:${PORT:-8080} app:app
