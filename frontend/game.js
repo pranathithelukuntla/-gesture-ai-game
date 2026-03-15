@@ -349,7 +349,9 @@ function drawReplayFrame() {
 // =====================================================================
 //  SOCKET + BACKEND FRAME SENDING
 // =====================================================================
-const socket = io('http://localhost:5000', { reconnectionAttempts: 5 });
+// Dynamically connect to the same host that served the page
+const backendUrl = window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin;
+const socket = io(backendUrl, { reconnectionAttempts: 5 });
 const connectionStatus = document.getElementById('connection-status');
 const webcamPreview = document.getElementById('webcam-preview');
 
@@ -800,9 +802,17 @@ function drawPlayer() {
 }
 
 function drawShuriken(cx, cy, r, angle, color = '#ff4444') {
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(angle); ctx.shadowBlur = 14; ctx.shadowColor = color; ctx.fillStyle = color; ctx.beginPath();
-    for (let i = 0; i < 4; i++) { const a1 = (i / 4) * Math.PI * 2, a2 = a1 + Math.PI / 4; ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a1) * r, Math.sin(a1) * r); ctx.lineTo(Math.cos(a2) * r * 0.45, Math.sin(a2) * r * 0.45); }
-    ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0; ctx.restore();
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    
+    // Draw an emoji instead of the spike shape
+    ctx.font = `${r * 1.8}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🧸', 0, 0);
+    
+    ctx.restore();
 }
 
 function drawPowerUp(p) {
