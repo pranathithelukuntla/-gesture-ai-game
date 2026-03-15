@@ -6,7 +6,7 @@ import threading
 import time
 import base64
 
-app = Flask(__name__, template_folder='../frontend', static_folder='../frontend')
+app = Flask(__name__, template_folder='../frontend', static_folder='../frontend', static_url_path='')
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 detector = HandEmotionDetector()
 
